@@ -2,7 +2,6 @@
 Database Schemas
 
 Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
 
 Each Pydantic model represents a collection in your database.
 Model name is converted to lowercase for the collection name:
@@ -12,9 +11,7 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
-
-# Example schemas (replace with your own):
+from typing import Optional, List
 
 class User(BaseModel):
     """
@@ -37,12 +34,28 @@ class Product(BaseModel):
     price: float = Field(..., ge=0, description="Price in dollars")
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
+    image: Optional[str] = Field(None, description="Primary image URL")
 
-# Add your own schemas here:
-# --------------------------------------------------
+class CartItem(BaseModel):
+    product_id: str
+    qty: int = Field(1, ge=1, description="Quantity")
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Cart(BaseModel):
+    """Cart per client_id"""
+    client_id: str
+    items: List[CartItem] = []
+
+class Wishlist(BaseModel):
+    client_id: str
+    product_ids: List[str] = []
+
+class Order(BaseModel):
+    client_id: str
+    items: List[CartItem]
+    total: float
+    payment_method: str = "COD"
+    status: str = "placed"
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
